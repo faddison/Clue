@@ -9,7 +9,9 @@ fraser addison b4u7
 
 
 setup :-
-		map_character_names.
+		map_character_names,
+		map_weapon_names,
+		map_room_names.
 
 % %%%%% START GAME
 
@@ -102,6 +104,14 @@ print_weapons :-
 		writeln('"ro". - Rope'),
 		writeln('"l". - Lead Pipe'),
 		writeln('"w". - Wrench').
+		
+map_weapon_names :-
+		assert(weapon_name('k', 'Knife')),
+		assert(weapon_name('c', 'Candlestick')),
+		assert(weapon_name('r', 'Revolver')),
+		assert(weapon_name('ro', 'Rope')),
+		assert(weapon_name('l', 'Lead Pipe')),
+		assert(weapon_name('w', 'Wrench')),
 
 % prints out the list of cards and corresponding abbreviation		
 print_cards :-
@@ -120,6 +130,17 @@ print_rooms :-
 		writeln('"h". - Hall'),
 		writeln('"lo". - Lounge'),
 		writeln('"d". - Dining Room').
+		
+map_room_names :-
+		assert(room_name('k', 'Kitchen')),
+		assert(room_name('b', 'Ballroom')),
+		assert(room_name('c', 'Conservatory')),
+		assert(room_name('bi', 'Billiard Room')),
+		assert(room_name('l', 'Library')),
+		assert(room_name('s', 'Study')),
+		assert(room_name('h', 'Hall')),
+		assert(room_name('lo', 'Lounge')),
+		assert(room_name('d', 'Dining Room')),
 
 % %%%%% INITIAL CARD KNOWLEDGE
 
@@ -146,13 +167,8 @@ get_card_title(I, PlayerIndex) :-
 % given that the card is a person, update person with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
 init_person(S, PlayerIndex) :-
-	   (S == 's' -> retract(person('Miss Scarlett', -1, [])), assert(person('Miss Scarlett', PlayerIndex, []));
-		S == 'w' -> retract(person('Mrs. White', -1, [])), assert(person('Mrs. White', PlayerIndex, []));
-		S == 'g' -> retract(person('Mr. Green', -1, [])), assert(person('Mr. Green', PlayerIndex, [])); 
-		S == 'p' -> retract(person('Mrs. Peacock', -1, [])), assert(person('Mrs. Peacock', PlayerIndex, []));
-		S == 'pl' -> retract(person('Professor Plum', -1, [])), assert(person('Professor Plum', PlayerIndex, []));
-		S == 'm' -> retract(person('Colonel Mustard', -1, [])), assert(person('Colonel Mustard', PlayerIndex, []));
-		write('Invalid Card! Please try again.')),
+		character_name(S, Name),
+	    retract(person(Name, -1, [])), assert(person(Name, PlayerIndex, []));
 		write('More Cards to enter? ("y"./"n".)'), nl, read(X),
             (X == 'y' -> get_cards(PlayerIndex);
              X == 'n' -> nl, write('No more cards to add.');
