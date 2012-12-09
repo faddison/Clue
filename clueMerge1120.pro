@@ -111,7 +111,7 @@ map_weapon_names :-
 		assert(weapon_name('r', 'Revolver')),
 		assert(weapon_name('ro', 'Rope')),
 		assert(weapon_name('l', 'Lead Pipe')),
-		assert(weapon_name('w', 'Wrench')),
+		assert(weapon_name('w', 'Wrench')).
 
 % prints out the list of cards and corresponding abbreviation		
 print_cards :-
@@ -140,7 +140,7 @@ map_room_names :-
 		assert(room_name('s', 'Study')),
 		assert(room_name('h', 'Hall')),
 		assert(room_name('lo', 'Lounge')),
-		assert(room_name('d', 'Dining Room')),
+		assert(room_name('d', 'Dining Room')).
 
 % %%%%% INITIAL CARD KNOWLEDGE
 
