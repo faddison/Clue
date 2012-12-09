@@ -1,4 +1,5 @@
 :- compile(clue_db).
+:- compile(test).
 
 :- dynamic(weapon/3), dynamic(person/3), dynamic(room/3), dynamic(player/2), dynamic(suggestion/4), dynamic(card/3), dynamic(player_list/2), dynamic(sugg_list/4).
 
@@ -28,15 +29,7 @@ cluetest0 :-
 		assert(self('Mr. Green')),
 		begin_game(3).
 % test method 1
-cluetest1 :-  
-        reset_all,
-		setup,
-        win_condition1,
-		assert(player(1, 'Miss Scarlett')),
-		assert(player(2, 'Mr. Green')),
-		assert(player(3, 'Mrs. Peacock')),
-		assert(self('Mr. Green')),
-		begin_game(3).
+
 % test method 2	
 cluetest2 :-  
         reset_all,
