@@ -153,16 +153,22 @@ get_cards(PlayerIndex) :- nl, write('What cards do you have?'), nl,
 
 % since card type is known, adds shortcut input keys depending on card type 
 get_card_title(I, PlayerIndex) :-  
-    (I == 's' -> nl, write('Enter the suspect name as specified below: '), nl, 
-		print_characters,
-		read(S), init_person(S, PlayerIndex); 
-    (I == 'w' -> nl, write('Enter the weapon type as specified below: '), nl, 
-		print_weapons,
-		read(W), init_weapon(W, PlayerIndex)); 
-    (I == 'r' -> nl, write('Enter the room type as specified below: '), nl, 
-		print_rooms,
-		read(R), init_room(R, PlayerIndex)); 
-	write('Done Initialization')).
+		I == 's' -> 
+			(writeln('Enter the suspect name as specified below: '), print_characters,
+			read(S), character_name(S,_) -> 
+						init_person(S, PlayerIndex); 
+						invalid_command, get_cards(PlayerIndex)); 
+		I == 'w' -> 
+			(writeln('Enter the weapon type as specified below: '), print_weapons,
+			read(W), weapon_name(W,_) -> 
+						init_weapon(W, PlayerIndex); 
+						invalid_command, get_cards(PlayerIndex));
+		I == 'r' -> 
+			(writeln('Enter the room type as specified below: '), print_rooms,
+			read(R), room_name(R,_) -> 
+						init_room(R, PlayerIndex);
+						invalid_command, get_cards(PlayerIndex));
+		write('Done Initialization').
 
 % given that the card is a person, update person with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
@@ -170,32 +176,30 @@ get_card_title(I, PlayerIndex) :-
 init_person(S, PlayerIndex) :-
 		character_name(S, Name),
 	    retract(person(Name, -1, [])), assert(person(Name, PlayerIndex, [])),
-		write('More Cards to enter? ("y"./"n".)'), nl, read(X),
-            (X == 'y' -> get_cards(PlayerIndex);
-             X == 'n' -> nl, write('No more cards to add.');
-            invalid_command).
+		more_cards.
 
 % given that the card is a weapon, update weapon with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
 % put yes no in loop instead of hardcoded to capture errors
 init_weapon(W, PlayerIndex) :-
-		weapon_name(W,Name),
+		weapon_name(W, Name),
 	    retract(weapon(Name, -1, [])), assert(weapon(Name, PlayerIndex, [])),
-		write('More Cards to enter? ("y"./"n".)'), nl, read(X),
-        (X == 'y' -> get_cards(PlayerIndex);
-        X == 'n' -> nl, write('No more cards to add.');
+		more_cards.
+
+more_cards() :-
+		write('More Cards to enter? ("y" or "n".)'), nl, read(X),
+        X == 'y' -> 
+			get_cards(PlayerIndex);
+        X == 'n' -> 
+			writeln('No more cards to add.');
         invalid_command).
-		
 % given that the card is a room, update room with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
 % the invalid_command call is skipping turns i think
 init_room(R, PlayerIndex) :- 
 		room_name(R, Name),
 	    retract(room(Name, -1, [])), assert(room(Name, PlayerIndex, [])),
-        write('More Cards to enter? ("y"./"n".)'), nl, read(X),
-        (X == 'y' -> get_cards(PlayerIndex);
-         X == 'n' -> nl, write('No more cards to add.');
-        invalid_command).
+        more_cards.
 
 
 % %%%% INITIALIZE ORDER OF PLAY
@@ -244,7 +248,7 @@ quit_game :- nl, write('Are you sure you want to exit the game?'),
 			 
 % Indicate that the given argument was invalid in some way.
 invalid_command :- 
-		write('Invalid command! Please try again.'), nl.
+		writeln('Invalid command! Please try again.'), nl.
 
 % Execute the specified menu command.
 exec_command(CurrIndex, NumPlayers, X) :- 
