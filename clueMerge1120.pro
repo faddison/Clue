@@ -47,7 +47,7 @@ cluetest2 :-
 		begin_game(3).
 
 % main program entry point		
-clue :- reset_all, setup,add_cards, write('Clue Assistant: Version 1'), nl, create_players.
+clue :- reset_all,setup ,add_cards, write('Clue Assistant: Version 1'), nl, create_players.
 
 % intializes all players participating in the game and begins the game itself
 create_players :- 
@@ -98,85 +98,88 @@ assign_player(Index, Player) :- assert(player(Index, Player)).
 
 % prints out the list of available weapons and corresponding abbreviation
 print_weapons :-       
-		writeln('"k". - Knife'),
-		writeln('"c". - Candlestick'),
-		writeln('"r". - Revolver'),
-		writeln('"ro". - Rope'),
-		writeln('"l". - Lead Pipe'),
-		writeln('"w". - Wrench').
+		writeln('"k". - knife'),
+		writeln('"c". - candlestick'),
+		writeln('"r". - revolver'),
+		writeln('"ro". - rope'),
+		writeln('"l". - lead pipe'),
+		writeln('"w". - wrench').
 		
 map_weapon_names :-
-		assert(weapon_name('k', 'Knife')),
-		assert(weapon_name('c', 'Candlestick')),
-		assert(weapon_name('r', 'Revolver')),
-		assert(weapon_name('ro', 'Rope')),
-		assert(weapon_name('l', 'Lead Pipe')),
-		assert(weapon_name('w', 'Wrench')).
+		assert(weapon_name('k', 'knife')),
+		assert(weapon_name('c', 'candlestick')),
+		assert(weapon_name('r', 'revolver')),
+		assert(weapon_name('ro', 'rope')),
+		assert(weapon_name('l', 'lead pipe')),
+		assert(weapon_name('w', 'wrench')).
 
 % prints out the list of cards and corresponding abbreviation		
 print_cards :-
-		writeln('"s". - Suspect card'),
-		writeln('"w". - Weapon card'), 
-		writeln('"r". - Room card').
+		writeln('"s". - suspect card'),
+		writeln('"w". - weapon card'), 
+		writeln('"r". - room card').
 
 % prints out the list of rooms and corresponding abbreviation
 print_rooms :-		
-		writeln('"k". - Kitchen'),
-		writeln('"b". - Ballroom'),
-		writeln('"c". - Conservatory'),
-		writeln('"bi". - Billiard Room'),
-		writeln('"l". - Library'),
-		writeln('"s". - Study'),
-		writeln('"h". - Hall'),
-		writeln('"lo". - Lounge'),
-		writeln('"d". - Dining Room').
+		writeln('"k". - kitchen'),
+		writeln('"b". - ballroom'),
+		writeln('"c". - conservatory'),
+		writeln('"bi". - billiard room'),
+		writeln('"l". - library'),
+		writeln('"s". - study'),
+		writeln('"h". - hall'),
+		writeln('"lo". - lounge'),
+		writeln('"d". - dining room').
 		
 map_room_names :-
-		assert(room_name('k', 'Kitchen')),
-		assert(room_name('b', 'Ballroom')),
-		assert(room_name('c', 'Conservatory')),
-		assert(room_name('bi', 'Billiard Room')),
-		assert(room_name('l', 'Library')),
-		assert(room_name('s', 'Study')),
-		assert(room_name('h', 'Hall')),
-		assert(room_name('lo', 'Lounge')),
-		assert(room_name('d', 'Dining Room')).
+		assert(room_name('k', 'kitchen')),
+		assert(room_name('b', 'ballroom')),
+		assert(room_name('c', 'conservatory')),
+		assert(room_name('bi', 'billiard room')),
+		assert(room_name('l', 'library')),
+		assert(room_name('s', 'study')),
+		assert(room_name('h', 'hall')),
+		assert(room_name('lo', 'lounge')),
+		assert(room_name('d', 'dining room')).
 
 % %%%%% INITIAL CARD KNOWLEDGE
 
 % set up cards so -1 flag is changed to playerIndex. this represents which player definitely holds the card
 % asks for card type
-get_cards(PlayerIndex) :- nl, write('What cards do you have?'), nl,
-    print_cards,
-    read(I), 
+get_cards(PlayerIndex) :- nl, writeln('What cards do you have?'), print_cards, read(I), 
 	get_card_title(I, PlayerIndex).
 
 % since card type is known, adds shortcut input keys depending on card type 
-get_card_title(I, PlayerIndex) :-  
-		I == 's' -> 
-			(writeln('Enter the suspect name as specified below: '), print_characters,
-			read(S), character_name(S,_) -> 
-						init_person(S, PlayerIndex); 
-						invalid_command, get_cards(PlayerIndex)); 
-		I == 'w' -> 
-			(writeln('Enter the weapon type as specified below: '), print_weapons,
-			read(W), weapon_name(W,_) -> 
-						init_weapon(W, PlayerIndex); 
-						invalid_command, get_cards(PlayerIndex));
-		I == 'r' -> 
-			(writeln('Enter the room type as specified below: '), print_rooms,
-			read(R), room_name(R,_) -> 
-						init_room(R, PlayerIndex);
-						invalid_command, get_cards(PlayerIndex));
-		write('Done Initialization').
+get_card_title('s', PlayerIndex) :- init_person_card(PlayerIndex).
+get_card_title('w', PlayerIndex) :- init_weapon_card(PlayerIndex).
+get_card_title('r', PlayerIndex) :- init_room_card(PlayerIndex).
+get_card_title(I, PlayerIndex) :- invalid_command, get_cards(PlayerIndex).
 
+init_person_card(PlayerIndex) :- 
+		writeln('Enter the suspect name as specified below: '), print_characters, read(S),
+		character_name(S,_) -> 
+			init_person(S, PlayerIndex); 
+			invalid_command, get_cards(PlayerIndex).
+
+init_weapon_card(PlayerIndex) :-
+		writeln('Enter the weapon type as specified below: '), print_weapons, read(W), 
+		weapon_name(W,_) -> 
+			init_weapon(W, PlayerIndex); 
+			invalid_command, get_cards(PlayerIndex).
+
+init_room_card(PlayerIndex) :-
+		writeln('Enter the room type as specified below: '), print_rooms, read(R), 
+		room_name(R,_) -> 
+			init_room(R, PlayerIndex);
+			invalid_command, get_cards(PlayerIndex).
+		
 % given that the card is a person, update person with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
 % error checking needs to be handled by parent caller
 init_person(S, PlayerIndex) :-
 		character_name(S, Name),
 	    retract(person(Name, -1, [])), assert(person(Name, PlayerIndex, [])),
-		more_cards.
+		more_cards(PlayerIndex).
 
 % given that the card is a weapon, update weapon with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
@@ -184,23 +187,24 @@ init_person(S, PlayerIndex) :-
 init_weapon(W, PlayerIndex) :-
 		weapon_name(W, Name),
 	    retract(weapon(Name, -1, [])), assert(weapon(Name, PlayerIndex, [])),
-		more_cards.
-
-more_cards() :-
-		write('More Cards to enter? ("y" or "n".)'), nl, read(X),
-        X == 'y' -> 
-			get_cards(PlayerIndex);
-        X == 'n' -> 
-			writeln('No more cards to add.');
-        invalid_command).
+		more_cards(PlayerIndex).
+		
 % given that the card is a room, update room with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
 % the invalid_command call is skipping turns i think
 init_room(R, PlayerIndex) :- 
 		room_name(R, Name),
 	    retract(room(Name, -1, [])), assert(room(Name, PlayerIndex, [])),
-        more_cards.
+        more_cards(PlayerIndex).
 
+%
+more_cards(PlayerIndex) :-
+		write('More Cards to enter? ("y" or "n".)'), nl, read(X),
+        X == 'y' -> 
+			get_cards(PlayerIndex);
+			X == 'n' -> 
+				writeln('No more cards to add.');
+        invalid_command.
 
 % %%%% INITIALIZE ORDER OF PLAY
 
@@ -565,7 +569,9 @@ reset_all :-
 		retractall(suggestion(P, X, Y, Z)),
 		retractall(player(_,_)),
 		retractall(self(_)),
-		retractall(character_name(_,_)).
+		retractall(character_name(_,_)),
+		retractall(weapon_name(_,_)),
+		retractall(room_name(_,_)).
 
 add_cards :-
 		assert(card(X,Y,Z) :- room(X, Y, Z); person(X, Y, Z); weapon(X,Y,Z)),
