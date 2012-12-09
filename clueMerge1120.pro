@@ -166,9 +166,10 @@ get_card_title(I, PlayerIndex) :-
 
 % given that the card is a person, update person with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
+% error checking needs to be handled by parent caller
 init_person(S, PlayerIndex) :-
 		character_name(S, Name),
-	    retract(person(Name, -1, [])), assert(person(Name, PlayerIndex, []));
+	    retract(person(Name, -1, [])), assert(person(Name, PlayerIndex, [])),
 		write('More Cards to enter? ("y"./"n".)'), nl, read(X),
             (X == 'y' -> get_cards(PlayerIndex);
              X == 'n' -> nl, write('No more cards to add.');
@@ -176,32 +177,21 @@ init_person(S, PlayerIndex) :-
 
 % given that the card is a weapon, update weapon with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
-init_weapon(W, PlayerIndex) :- 
-	   (W == 'k' -> retract(weapon('knife', -1, [])), assert(weapon('knife', PlayerIndex, [])); 
-		W == 'c' -> retract(weapon('candlestick', -1, [])), assert(weapon('candlestick', PlayerIndex, []));
-		W == 'r' -> retract(weapon('revolver', -1, [])), assert(weapon('revolver', PlayerIndex, []));
-		W == 'ro' -> retract(weapon('rope', -1, [])), assert(weapon('rope', PlayerIndex, [])); 
-		W == 'l' -> retract(weapon('lead pipe', -1, [])), assert(weapon('lead pipe', PlayerIndex, []));
-		W == 'w' -> retract(weapon('wrench', -1, [])), assert(weapon('wrench', PlayerIndex, []));
-		write('Invalid Card! Please try again.')),
-        write('More Cards to enter? ("y"./"n".)'), nl, read(X),
+% put yes no in loop instead of hardcoded to capture errors
+init_weapon(W, PlayerIndex) :-
+		weapon_name(W,Name),
+	    retract(weapon(Name, -1, [])), assert(weapon(Name, PlayerIndex, [])),
+		write('More Cards to enter? ("y"./"n".)'), nl, read(X),
         (X == 'y' -> get_cards(PlayerIndex);
         X == 'n' -> nl, write('No more cards to add.');
         invalid_command).
 		
 % given that the card is a room, update room with playerindex in database, remove -1 flag
 % prompt to add more cards if desired
+% the invalid_command call is skipping turns i think
 init_room(R, PlayerIndex) :- 
-	   (R == 'k' -> retract(room('kitchen', -1, [])), assert(room('kitchen', PlayerIndex, []));
-		R == 'b' -> retract(room('ballroom', -1, [])), assert(room('ballroom', PlayerIndex, [])); 
-		R == 'c' -> retract(room('conservatory', -1, [])), assert(room('conservatory', PlayerIndex, []));
-		R == 'bi' -> retract(room('billiard room', -1, [])), assert(room('billiard room', PlayerIndex, []));
-		R == 'l' -> retract(room('library', -1, [])), assert(room('library', PlayerIndex, []));
-		R == 's' -> retract(room('study', -1, [])), assert(room('study', PlayerIndex, []));
-		R == 'h' -> retract(room('hall', -1, [])), assert(room('hall', PlayerIndex, []));
-		R == 'lo' -> retract(room('lounge', -1, [])), assert(room('lounge', PlayerIndex, []));
-		R == 'd' -> retract(room('dining room', -1, [])), assert(room('dining room', PlayerIndex, []));
-		write('Invalid Card! Please try again.')),
+		room_name(R, Name),
+	    retract(room(Name, -1, [])), assert(room(Name, PlayerIndex, [])),
         write('More Cards to enter? ("y"./"n".)'), nl, read(X),
         (X == 'y' -> get_cards(PlayerIndex);
          X == 'n' -> nl, write('No more cards to add.');
