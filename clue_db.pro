@@ -1,4 +1,36 @@
 % %%%%% RESET DATABASE
+setup :-
+		map_character_names,
+		map_weapon_names,
+		map_room_names.
+		
+% maps the full character and abbreviation for quick reference and code reduction
+map_character_names :-
+		assert(character_name('s', 'Miss Scarlett')),
+		assert(character_name('m', 'Colonel Mustard')),
+		assert(character_name('w', 'Mrs. White')),
+		assert(character_name('g', 'Mr. Green')),
+		assert(character_name('p', 'Mrs. Peacock')),
+		assert(character_name('pl', 'Professor Plum')).
+		
+map_weapon_names :-
+		assert(weapon_name('k', 'knife')),
+		assert(weapon_name('c', 'candlestick')),
+		assert(weapon_name('r', 'revolver')),
+		assert(weapon_name('ro', 'rope')),
+		assert(weapon_name('l', 'lead pipe')),
+		assert(weapon_name('w', 'wrench')).
+		
+map_room_names :-
+		assert(room_name('k', 'kitchen')),
+		assert(room_name('b', 'ballroom')),
+		assert(room_name('c', 'conservatory')),
+		assert(room_name('bi', 'billiard room')),
+		assert(room_name('l', 'library')),
+		assert(room_name('s', 'study')),
+		assert(room_name('h', 'hall')),
+		assert(room_name('lo', 'lounge')),
+		assert(room_name('d', 'dining room')).
 
 reset_all :- 
 		retractall(weapon(X, Y, Z)),
