@@ -33,14 +33,17 @@ assign_player(Index, Player) :- assert(player(Index, Player)).
 
 % set up cards so -1 flag is changed to playerIndex. this represents which player definitely holds the card
 % asks for card type
-get_cards(PlayerIndex) :- nl, writeln('What cards do you have?'), print_cards, read(I), 
-	get_card_title(I, PlayerIndex).
+get_cards(PlayerIndex) :- 
+		writeln('What cards do you have?'), 
+		print_cards, 
+		read(I), 
+		get_card_title(I, PlayerIndex).
 
 % since card type is known, adds shortcut input keys depending on card type 
 get_card_title('s', PlayerIndex) :- init_person_card(PlayerIndex).
 get_card_title('w', PlayerIndex) :- init_weapon_card(PlayerIndex).
 get_card_title('r', PlayerIndex) :- init_room_card(PlayerIndex).
-get_card_title(I, PlayerIndex) :- invalid_command, get_cards(PlayerIndex).
+get_card_title(Invalid, PlayerIndex) :- invalid_command, get_cards(PlayerIndex).
 
 init_person_card(PlayerIndex) :- 
 		writeln('Enter the suspect name as specified below: '), print_characters, read(S),
@@ -102,65 +105,64 @@ begins the game. this method is called after all player
 turns have been completed. defined as a "round." it also checks if
 any accusations can be made.
 */
-begin_game(NumPlayers) :- nl, nl, write('Beginning next round...'), nl, accusation(NumPlayers), game_loop(1, NumPlayers).
+begin_game(NumPlayers) :- 
+		writeln('Beginning next round...'), 
+		accusation(NumPlayers), 
+		game_loop(1, NumPlayers).
 
 /*
 Main game loop. Loops through the list of players using a counter. 
 Menu is called and after it returns the game loop runs again on next player.
 */
-game_loop(CurrIndex, NumPlayers) :- nl, write(CurrIndex), player(CurrIndex, Name), write(', '), write(Name), write(' turn.'), 
-									(self(Name) -> write(' (Your turn!)'); write(' (Opponents turn!)')), nl,
-									menu(CurrIndex, NumPlayers), 
-									(CurrIndex = NumPlayers) -> begin_game(NumPlayers);
-									(NextPlayer is CurrIndex + 1), game_loop(NextPlayer, NumPlayers).
+game_loop(CurrIndex, NumPlayers) :- 
+		nl, write(CurrIndex), player(CurrIndex, Name), write(', '), write(Name), write(' turn.'), 
+		(self(Name) -> 
+			write(' (Your turn!)'); 
+			write(' (Opponents turn!)')), nl,
+		menu(CurrIndex, NumPlayers), 
+		(CurrIndex = NumPlayers) -> 
+			begin_game(NumPlayers);
+			(NextPlayer is CurrIndex + 1), 
+		game_loop(NextPlayer, NumPlayers).
 
 % %%%%%%% MAIN MENU
 
 % entry point for the command menu system.
 menu(CurrIndex, NumPlayers) :- 
-		write('Please enter a command ("help" for list of commands)'), nl, read(X), exec_command(CurrIndex, NumPlayers, X).
-	
-% Print the list of available menu commands.	
-print_commands :-
-		writeln('"next"    - finish the turn.'),
-        writeln('"record"  - record a card shown to you.'),
-        writeln('"suggest" - record a suggestion.'),
-        writeln('"history" - list the database of events.'),
-		writeln('"suggestions" - list all the suggestions.'),
-		writeln('"cards" - list all the cards.'),
-		writeln('"players" - list all the players.'),
-		writeln('"accuse"  - check if an accusation can be made.'),
-        writeln('"restart"   - clears all current game information.'),
-		writeln('"hint"   - provides a suggestion hint.'),
-		writeln('"current"   - shows who the current player is.'),
-		writeln('"quit" 	 - end game and stop the program.').
+		writeln('Please enter a command ("help" for list of commands)'),
+		read(Command), 
+		exec_command(CurrIndex, NumPlayers, Command).
 
 % Quit the game by throwing an exception to prevent the termination of swipl process.
-quit_game :- nl, write('Are you sure you want to exit the game?'),
-			 nl, write('Type "yes" to exit or "no" to cancel'),
-			 nl, read(X), (X = 'yes' -> throw(gameover)). 
+quit_game :- 
+		writeln('Are you sure you want to exit the game?'),
+		writeln('Type "yes" to exit or "no" to cancel'),
+		read(X), 
+		(X = 'yes' -> throw(gameover)). 
 
 % Execute the specified menu command.
 exec_command(CurrIndex, NumPlayers, X) :- 
-			player(CurrIndex, Player),
-			( X = 'next' -> write('End turn.');
-			  X = 'help' -> print_commands, menu(CurrIndex, NumPlayers);
-              X = 'record' -> record_player_card(CurrIndex), menu(CurrIndex, NumPlayers);
-			  X = 'suggest' -> make_suggestion(CurrIndex, NumPlayers), menu(CurrIndex, NumPlayers);
-			  X = 'history' -> history, menu(CurrIndex, NumPlayers);
-			  X = 'suggestions' -> history_suggestions, menu(CurrIndex, NumPlayers);
-			  X = 'cards' -> history_cards, menu(CurrIndex, NumPlayers);
-			  X = 'players' -> history_players, menu(CurrIndex, NumPlayers);
-			  X = 'accuse' -> accusation(NumPlayers), menu(CurrIndex, NumPlayers);
-              X = 'reset' -> reset_all, add_cards, begin_game(NumPlayers);
-			  X = 'current' -> current_player(Player), menu(CurrIndex, NumPlayers);
-			  X = 'hint' -> get_hint(Player), menu(CurrIndex, NumPlayers);
-			  X = 'quit' -> quit_game, menu(CurrIndex, NumPlayers);
-			  invalid_command). 
+		player(CurrIndex, Player),
+		(X = 'next' -> write('End turn.');
+		X = 'help' -> print_commands, menu(CurrIndex, NumPlayers);
+		X = 'record' -> record_player_card(CurrIndex), menu(CurrIndex, NumPlayers);
+		X = 'suggest' -> make_suggestion(CurrIndex, NumPlayers), menu(CurrIndex, NumPlayers);
+		X = 'history' -> history, menu(CurrIndex, NumPlayers);
+		X = 'suggestions' -> history_suggestions, menu(CurrIndex, NumPlayers);
+		X = 'cards' -> history_cards, menu(CurrIndex, NumPlayers);
+		X = 'players' -> history_players, menu(CurrIndex, NumPlayers);
+		X = 'accuse' -> accusation(NumPlayers), menu(CurrIndex, NumPlayers);
+		X = 'reset' -> reset_all, add_cards, begin_game(NumPlayers);
+		X = 'current' -> current_player(Player), menu(CurrIndex, NumPlayers);
+		X = 'hint' -> get_hint(Player), menu(CurrIndex, NumPlayers);
+		X = 'quit' -> quit_game, menu(CurrIndex, NumPlayers);
+		invalid_command). 
 			  
 % Determine whether a hint can be give or not.
 get_hint(Player) :-
-		self(Player) -> print_hint; write('No hints for opponents!'), nl.
+		self(Player) -> 
+			print_hint; 
+			writeln('No hints for opponents!').
 
 % Retrieve the best hints from the database. Does not produce a room.	
 print_hint :-
@@ -171,22 +173,36 @@ print_hint :-
 	
 % Returns the current user and whether its computer or player turn.	
 current_player(Player) :-
-		nl, write('Current player is '), write(Player),
-		self(Player) -> write(' (Your turn!)'); write(' (Opponents turn!)'), nl.
+		write('Current player is '), write(Player),
+		self(Player) -> 
+			write(' (Your turn!)'); 
+			write(' (Opponents turn!)').
 
 % %%%%%% RECORD CARD INFO
 
 % Record the card with the specified player.
 record_player_card(Player) :-
-	writeln('Which type of card was it?'),
-	print_cards,
-	read(T), nl, nl, get_card(Player, T).
+		writeln('Which type of card was it?'),
+		print_cards,
+		read(Card),
+		get_card(Player, Card).
 
 % retrieve the correct card to add to the database.
-get_card(Player, 's') :- get_character(Character), save_character_card(Player, Character).
-get_card(Player, 'w') :- get_weapon(Weapon), save_weapon_card(Player, Weapon).
-get_card(Player, 'r') :- get_room(Room), save_room_card(Player, Room).
-get_card(Player, Invalid) :- invalid_command, record_player_card(Player).
+get_card(Player, 's') :- 
+		get_character(Character), 
+		save_character_card(Player, Character).
+		
+get_card(Player, 'w') :- 
+		get_weapon(Weapon), 
+		save_weapon_card(Player, Weapon).
+		
+get_card(Player, 'r') :- 
+		get_room(Room), 
+		save_room_card(Player, Room).
+		
+get_card(Player, Invalid) :- 
+		invalid_command, 
+		record_player_card(Player).
 
 
 % add the specified suspect card information to the database
@@ -205,6 +221,7 @@ save_room_card(Player, Room) :-
 		retract(room(Room, _, _)), 
 		assert(room(Room, P, [])).
 		
+% Ask for and retrieve the specified type of card.	
 get_character(Character) :-
 		writeln('Which suspect was suggested?'),
 		print_characters,
@@ -232,7 +249,9 @@ get_weapon(Weapon) :-
 % %%%%%% MAKE A SUGGESTION
 
 % Begins the suggestion process
-make_suggestion(CurrIndex, NumPlayers) :- enter_suggestion(CurrIndex, NumPlayers), writeln('Suggestion Made').
+make_suggestion(CurrIndex, NumPlayers) :- 
+		enter_suggestion(CurrIndex, NumPlayers), 
+		writeln('Suggestion Made').
 
 % Enter a suggestion here
 enter_suggestion(CurrIndex, NumPlayers) :-
@@ -265,13 +284,17 @@ update_cards(CurrIndex, NumPlayers, Count, Suggestor, Room, Suspect, Weapon) :-
 		% write('Next Index is '), write(NextIndex),
 		player(NextIndex, Player), NewCount is Count + 1,
 		write('Did '), write(Player), write(' show a card? "y"./"n".'), nl, read(CardShown),
-		(CardShown == 'y' -> (self(Suggestor) -> record_player_card(Player); writeln('No information stored.'));
-		CardShown == 'n' -> writeln('Saving information. Moving on to next player...'),
-		update_weapon(Weapon, [Player]), 
-		update_room(Room, [Player]), 
-		update_suspect(Suspect, [Player]), 
-        update_cards(CurrIndex, NumPlayers, NewCount, Suggestor, Room, Suspect, Weapon); 
-		invalid_command). 
+		(CardShown == 'y' -> 
+			(self(Suggestor) -> 
+				record_player_card(Player); 
+				writeln('No information stored.'));
+			CardShown == 'n' -> 
+				writeln('Saving information. Moving on to next player...'),
+					update_weapon(Weapon, [Player]), 
+					update_room(Room, [Player]), 
+					update_suspect(Suspect, [Player]), 
+					update_cards(CurrIndex, NumPlayers, NewCount, Suggestor, Room, Suspect, Weapon); 
+				invalid_command). 
 
 % when player doesnt have weapon, player ID is added to the list of opponents that definitely dont hold the card
 update_weapon(W, DontHold) :-
