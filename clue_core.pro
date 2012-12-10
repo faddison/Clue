@@ -126,6 +126,9 @@ print_commands :-
         writeln('"record"  - record a card shown to you.'),
         writeln('"suggest" - record a suggestion.'),
         writeln('"history" - list the database of events.'),
+		writeln('"suggestions" - list all the suggestions.'),
+		writeln('"cards" - list all the cards.'),
+		writeln('"players" - list all the players.'),
 		writeln('"accuse"  - check if an accusation can be made.'),
         writeln('"restart"   - clears all current game information.'),
 		writeln('"hint"   - provides a suggestion hint.'),
@@ -145,6 +148,9 @@ exec_command(CurrIndex, NumPlayers, X) :-
               X = 'record' -> record_player_card(CurrIndex), menu(CurrIndex, NumPlayers);
 			  X = 'suggest' -> make_suggestion(CurrIndex, NumPlayers), menu(CurrIndex, NumPlayers);
 			  X = 'history' -> history, menu(CurrIndex, NumPlayers);
+			  X = 'suggestions' -> history_suggestions, menu(CurrIndex, NumPlayers);
+			  X = 'cards' -> history_cards, menu(CurrIndex, NumPlayers);
+			  X = 'players' -> history_players, menu(CurrIndex, NumPlayers);
 			  X = 'accuse' -> accusation(NumPlayers), menu(CurrIndex, NumPlayers);
               X = 'reset' -> reset_all, add_cards, begin_game(NumPlayers);
 			  X = 'current' -> current_player(Player), menu(CurrIndex, NumPlayers);
@@ -170,7 +176,7 @@ current_player(Player) :-
 
 % %%%%%% RECORD CARD INFO
 
-% Record the card given the player.
+% Record the card with the specified player.
 record_player_card(Player) :-
 	writeln('Which type of card was it?'),
 	print_cards,
@@ -251,7 +257,7 @@ get_weapon(Weapon) :-
 % %%%%%% MAKE A SUGGESTION
 
 % Begins the suggestion process
-make_suggestion(CurrIndex, NumPlayers) :- enter_suggestion(CurrIndex, NumPlayers), write('Suggestion Made'), nl.
+make_suggestion(CurrIndex, NumPlayers) :- enter_suggestion(CurrIndex, NumPlayers), writeln('Suggestion Made').
 
 % Enter a suggestion here
 enter_suggestion(CurrIndex, NumPlayers) :-
@@ -259,20 +265,14 @@ enter_suggestion(CurrIndex, NumPlayers) :-
 		get_room(Room),
 		get_character(Character),
 		get_weapon(Weapon),
-/*
+		/*
 		Z = 'Miss Scarlett',
 		Y = 'kitchen',
 		I = 'knife',
-*/
+		*/
 		% add the suggestion to the database
 		assert(suggestion(Player, Room, Character, Weapon)),
-		update_cards(CurrIndex,
-					 NumPlayers,
-					 1,
-					 Player,
-					 Room,
-					 Character,
-					 Weapon).
+		update_cards(CurrIndex, NumPlayers, 1, Player, Room, Character, Weapon).
 		
 % %%%%% UPDATE CARDS WHEN NO CARDS SHOWN BY PLAYER
 
@@ -331,12 +331,20 @@ remove_duplicates([X,Y|Ys],[X|Zs]) :- X \= Y, remove_duplicates([Y|Ys],Zs).
 % %%%%% CURRENT GAME HISTORY
 
 % prints out the history of card information that we know
-history :- nl,
+history :- 
+		history_cards,
+		history_players,
+		history_suggestions.
+			
+history_cards :-
 		writeln('Current Card Information: '),
-			findall(card(X,Y,Z), card(X,Y,Z), AllCards), maplist(writeln, AllCards), nl,
+		findall(card(X,Y,Z), card(X,Y,Z), AllCards), maplist(writeln, AllCards), nl.
+		
+history_players :- 
 		writeln('Current Player Information: '),
-			findall(player(N, T), player(N, T), AllPlayers), maplist(writeln, Allplayers), nl,
+		findall(player(N, T), player(N, T), AllPlayers), maplist(writeln, Allplayers), nl.
+		
+history_suggestions :-
 		writeln('Previous Suggestions: '),
-			findall(suggestion(P,X,Y,Z), suggestion(P,X,Y,Z), AllSuggestions), maplist(writeln, AllSuggestions).
-
+		findall(suggestion(P,X,Y,Z), suggestion(P,X,Y,Z), AllSuggestions), maplist(writeln, AllSuggestions).
 
