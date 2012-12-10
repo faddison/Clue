@@ -71,3 +71,9 @@ update_suspect(S, DontHold) :-
 		append(List, DontHold, UpdatedList),
 		remove_duplicates(UpdatedList, NoDuplicates),
 		assert(person(S,N,NoDuplicates)).
+		
+% ensures that player ID is not added more than once to DontHold: Without this check we may falsely assume an accusation can be made.
+remove_duplicates([],[]).
+remove_duplicates([X],[X]).
+remove_duplicates([X,X|Xs],Ys) :- remove_duplicates([X|Xs],Ys).
+remove_duplicates([X,Y|Ys],[X|Zs]) :- X \= Y, remove_duplicates([Y|Ys],Zs).

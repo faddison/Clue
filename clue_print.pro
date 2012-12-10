@@ -53,4 +53,25 @@ print_commands :-
 		writeln('"hint"   		- provides a suggestion hint.'),
 		writeln('"current"   	- shows who the current player is.'),
 		writeln('"quit" 	 	- end game and stop the program.').
+	
+% %%%%% CURRENT GAME HISTORY
+	
+% prints out the history of card information that we know
+history :- 
+		history_cards,
+		history_players,
+		history_suggestions.
+			
+history_cards :-
+		writeln('Current Card Information: '),
+		findall(card(X,Y,Z), card(X,Y,Z), AllCards), maplist(writeln, AllCards), nl.
+		
+history_players :- 
+		writeln('Current Player Information: '),
+		findall(player(N, T), player(N, T), AllPlayers), maplist(writeln, Allplayers), nl.
+		
+history_suggestions :-
+		writeln('Previous Suggestions: '),
+		findall(suggestion(P,X,Y,Z), suggestion(P,X,Y,Z), AllSuggestions), maplist(writeln, AllSuggestions).
+
 		
