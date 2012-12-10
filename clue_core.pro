@@ -1,6 +1,3 @@
-:- compile(clue_db).
-:- compile(test).
-
 :- dynamic(weapon/3), dynamic(person/3), dynamic(room/3), dynamic(player/2), dynamic(suggestion/4), dynamic(card/3), dynamic(player_list/2), dynamic(sugg_list/4).
 
 /*
@@ -9,14 +6,6 @@ RUN clue. to begin the assistant.
 alyssa dunn
 fraser addison b4u7
 */
-
-
-setup :-
-		map_character_names,
-		map_weapon_names,
-		map_room_names.
-
-
 
 % intializes all players participating in the game and begins the game itself
 create_players :- 
@@ -32,15 +21,6 @@ specify_self :-
 		print_characters,
 		read(Name), character_name(Name, Player), assign_self(Player).
 
-% prints a list of all game characters with corresponding abbreviation
-print_characters :- 
-		writeln('"s". - Miss Scarlett'),
-		writeln('"m". - Col. Mustard'),  
-		writeln('"w". - Mrs. White'), 
-		writeln('"g". - Mr. Green'), 
-		writeln('"p". - Mrs. Peacock'), 
-		writeln('"pl". Prof. Plum').
-
 % add the human players character to the database for lookup
 assign_self(Player) :-  
 		player(_,Player) -> assert(self(Player));
@@ -52,64 +32,19 @@ create_opponents(NumPlayers, CurrIndex) :- nl, write('Enter name as specified be
 					read(Name), character_name(Name, Player),
 					assign_player(CurrIndex, Player), (NumPlayers>1 -> X is NumPlayers - 1, Acc is CurrIndex + 1, create_opponents(X, Acc)); 
 					specify_self, self(HumanPlayer), player(HumanIndex, HumanPlayer), get_cards(HumanIndex).
-					
-% maps the full character and abbreviation for quick reference and code reduction
-map_character_names :-
-		assert(character_name('s', 'Miss Scarlett')),
-		assert(character_name('m', 'Colonel Mustard')),
-		assert(character_name('w', 'Mrs. White')),
-		assert(character_name('g', 'Mr. Green')),
-		assert(character_name('p', 'Mrs. Peacock')),
-		assert(character_name('pl', 'Professor Plum')).
 
 % add the character and corresponding turn order to the database  
 assign_player(Index, Player) :- assert(player(Index, Player)). 
 
-% prints out the list of available weapons and corresponding abbreviation
-print_weapons :-       
-		writeln('"k". - knife'),
-		writeln('"c". - candlestick'),
-		writeln('"r". - revolver'),
-		writeln('"ro". - rope'),
-		writeln('"l". - lead pipe'),
-		writeln('"w". - wrench').
-		
-map_weapon_names :-
-		assert(weapon_name('k', 'knife')),
-		assert(weapon_name('c', 'candlestick')),
-		assert(weapon_name('r', 'revolver')),
-		assert(weapon_name('ro', 'rope')),
-		assert(weapon_name('l', 'lead pipe')),
-		assert(weapon_name('w', 'wrench')).
 
-% prints out the list of cards and corresponding abbreviation		
-print_cards :-
-		writeln('"s". - suspect card'),
-		writeln('"w". - weapon card'), 
-		writeln('"r". - room card').
-
-% prints out the list of rooms and corresponding abbreviation
-print_rooms :-		
-		writeln('"k". - kitchen'),
-		writeln('"b". - ballroom'),
-		writeln('"c". - conservatory'),
-		writeln('"bi". - billiard room'),
-		writeln('"l". - library'),
-		writeln('"s". - study'),
-		writeln('"h". - hall'),
-		writeln('"lo". - lounge'),
-		writeln('"d". - dining room').
 		
-map_room_names :-
-		assert(room_name('k', 'kitchen')),
-		assert(room_name('b', 'ballroom')),
-		assert(room_name('c', 'conservatory')),
-		assert(room_name('bi', 'billiard room')),
-		assert(room_name('l', 'library')),
-		assert(room_name('s', 'study')),
-		assert(room_name('h', 'hall')),
-		assert(room_name('lo', 'lounge')),
-		assert(room_name('d', 'dining room')).
+
+
+
+
+
+		
+
 
 % %%%%% INITIAL CARD KNOWLEDGE
 
@@ -218,10 +153,6 @@ print_commands :-
 quit_game :- nl, write('Are you sure you want to exit the game?'),
 			 nl, write('Type "yes" to exit or "no" to cancel'),
 			 nl, read(X), (X = 'yes' -> throw(gameover)). 
-			 
-% Indicate that the given argument was invalid in some way.
-invalid_command :- 
-		writeln('Invalid command! Please try again.'), nl.
 
 % Execute the specified menu command.
 exec_command(CurrIndex, NumPlayers, X) :- 
@@ -305,26 +236,26 @@ save_card_info_suspect(P, S) :-
 
 % add the specified weapon card information to the database		
 save_card_info_weapon(P, W) :-
-(W == 'k' -> retract(weapon('knife', _, _)), assert(weapon('knife', P, [])); 
-W == 'c' -> retract(weapon('candlestick', _, _)), assert(weapon('candlestick', P, []));
-W == 'r' -> retract(weapon('revolver', _, _)), assert(weapon('revolver', P, []));
-W == 'ro' -> retract(weapon('rope', _, _)), assert(weapon('rope', P, [])); 
-W == 'l' -> retract(weapon('lead pipe', _, _)), assert(weapon('lead pipe', P, []));
-W == 'w' -> retract(weapon('wrench', _, _)), assert(weapon('wrench', P, []));
-invalid_command).
+		(W == 'k' -> retract(weapon('knife', _, _)), assert(weapon('knife', P, [])); 
+		W == 'c' -> retract(weapon('candlestick', _, _)), assert(weapon('candlestick', P, []));
+		W == 'r' -> retract(weapon('revolver', _, _)), assert(weapon('revolver', P, []));
+		W == 'ro' -> retract(weapon('rope', _, _)), assert(weapon('rope', P, [])); 
+		W == 'l' -> retract(weapon('lead pipe', _, _)), assert(weapon('lead pipe', P, []));
+		W == 'w' -> retract(weapon('wrench', _, _)), assert(weapon('wrench', P, []));
+		invalid_command).
 
 % add the specified room card information to the database
 save_card_info_room(P, R) :-
-(R == 'k' -> retract(room('kitchen', _, _)), assert(room('kitchen', P, []));
-R == 'b' -> retract(room('ballroom', _, _)), assert(room('ballroom', P, [])); 
-R == 'c' -> retract(room('conservatory', _, _)), assert(room('conservatory', P, []));
-R == 'bi' -> retract(room('billiard room', _, _)), assert(room('billiard room', P, []));
-R == 'l' -> retract(room('library', _, _)), assert(room('library', P, []));
-R == 's' -> retract(room('study', _, _)), assert(room('study', P, []));
-R == 'h' -> retract(room('hall', _, _)), assert(room('hall', P, []));
-R == 'lo' -> retract(room('lounge', _, _)), assert(room('lounge', P, []));
-R == 'd' -> retract(room('dining room', _, _)), assert(room('dining room', P, []));
-invalid_command).
+		(R == 'k' -> retract(room('kitchen', _, _)), assert(room('kitchen', P, []));
+		R == 'b' -> retract(room('ballroom', _, _)), assert(room('ballroom', P, [])); 
+		R == 'c' -> retract(room('conservatory', _, _)), assert(room('conservatory', P, []));
+		R == 'bi' -> retract(room('billiard room', _, _)), assert(room('billiard room', P, []));
+		R == 'l' -> retract(room('library', _, _)), assert(room('library', P, []));
+		R == 's' -> retract(room('study', _, _)), assert(room('study', P, []));
+		R == 'h' -> retract(room('hall', _, _)), assert(room('hall', P, []));
+		R == 'lo' -> retract(room('lounge', _, _)), assert(room('lounge', P, []));
+		R == 'd' -> retract(room('dining room', _, _)), assert(room('dining room', P, []));
+		invalid_command).
 
 
 
