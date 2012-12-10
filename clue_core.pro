@@ -183,53 +183,28 @@ record_player_card(Player) :-
 	read(T), nl, nl, get_card(Player, T).
 
 % retrieve the correct card to add to the database.
-get_card(P, T) :-
-		player(PlayerKey, P),
-		(T == 's' -> nl, write('Enter the card as specified below: '), nl, 
-		print_characters,
-		read(S), save_card_info_suspect(PlayerKey, S);
-		T == 'w' -> nl, write('Enter the card as specified below: '), nl, 
-		print_weapons, 
-		read(W), save_card_info_weapon(PlayerKey,W); 
-		T == 'r' -> nl, write('Enter the card as specified below: '), nl, 
-		print_rooms,
-		read(R), save_card_info_room(PlayerKey,R); 
-		invalid_command).
+get_card(Player, 's') :- get_character(Character), save_character_card(Player, Character).
+get_card(Player, 'w') :- get_weapon(Weapon), save_weapon_card(Player, Weapon).
+get_card(Player, 'r') :- get_room(Room), save_room_card(Player, Room).
+get_card(Player, Invalid) :- invalid_command, record_player_card(Player).
 
 
 % add the specified suspect card information to the database
-save_card_info_suspect(P, S) :- 
-		(S == 's' -> retract(person('Miss Scarlett', _, _)), assert(person('Miss Scarlett', P, []));
-		S == 'w' -> retract(person('Mrs. White', _, _)), assert(person('Mrs. White', P, []));
-		S == 'g' -> retract(person('Mr. Green', _, _)), assert(person('Mr. Green', P, [])); 
-		S == 'p' -> retract(person('Mrs. Peacock', _, _)), assert(person('Mrs. Peacock', P, []));
-		S == 'pl' -> retract(person('Professor Plum', _, _)), assert(person('Professor Plum', P, []));
-		S == 'm' -> retract(person('Colonel Mustard', _, _)), assert(person('Colonel Mustard', P, []));
-		invalid_command).
-
+% need to implement check for existing card
+save_character_card(Player, Character) :- 
+		retract(person(Character, _, _)), 
+		assert(person(Character, Player, [])).
+		
 % add the specified weapon card information to the database		
-save_card_info_weapon(P, W) :-
-		(W == 'k' -> retract(weapon('knife', _, _)), assert(weapon('knife', P, [])); 
-		W == 'c' -> retract(weapon('candlestick', _, _)), assert(weapon('candlestick', P, []));
-		W == 'r' -> retract(weapon('revolver', _, _)), assert(weapon('revolver', P, []));
-		W == 'ro' -> retract(weapon('rope', _, _)), assert(weapon('rope', P, [])); 
-		W == 'l' -> retract(weapon('lead pipe', _, _)), assert(weapon('lead pipe', P, []));
-		W == 'w' -> retract(weapon('wrench', _, _)), assert(weapon('wrench', P, []));
-		invalid_command).
-
+save_weapon_card(Player, Weapon) :-
+		retract(weapon(Weapon, _, _)), 
+		assert(weapon(Weapon, Player, [])).
+		
 % add the specified room card information to the database
-save_card_info_room(P, R) :-
-		(R == 'k' -> retract(room('kitchen', _, _)), assert(room('kitchen', P, []));
-		R == 'b' -> retract(room('ballroom', _, _)), assert(room('ballroom', P, [])); 
-		R == 'c' -> retract(room('conservatory', _, _)), assert(room('conservatory', P, []));
-		R == 'bi' -> retract(room('billiard room', _, _)), assert(room('billiard room', P, []));
-		R == 'l' -> retract(room('library', _, _)), assert(room('library', P, []));
-		R == 's' -> retract(room('study', _, _)), assert(room('study', P, []));
-		R == 'h' -> retract(room('hall', _, _)), assert(room('hall', P, []));
-		R == 'lo' -> retract(room('lounge', _, _)), assert(room('lounge', P, []));
-		R == 'd' -> retract(room('dining room', _, _)), assert(room('dining room', P, []));
-		invalid_command).
-
+save_room_card(Player, Room) :-
+		retract(room(Room, _, _)), 
+		assert(room(Room, P, [])).
+		
 get_character(Character) :-
 		writeln('Which suspect was suggested?'),
 		print_characters,
