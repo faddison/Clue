@@ -1,3 +1,5 @@
+% %%% CHECKING FOR AN ACCUSATION 
+
 
 % alerts if accusation can be made or not
 accusation(NumPlayers) :- 

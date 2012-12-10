@@ -1,12 +1,5 @@
 :- dynamic(weapon/3), dynamic(person/3), dynamic(room/3), dynamic(player/2), dynamic(suggestion/4), dynamic(card/3), dynamic(player_list/2), dynamic(sugg_list/4).
 
-/*
-RUN clue. to begin the assistant.
-
-alyssa dunn
-fraser addison b4u7
-*/
-
 % intializes all players participating in the game and begins the game itself
 create_players :- 
 		nl, write('Please enter the number of players. Clue can be played with 2-6 players.'), nl, read(NumPlayers), 
@@ -35,16 +28,6 @@ create_opponents(NumPlayers, CurrIndex) :- nl, write('Enter name as specified be
 
 % add the character and corresponding turn order to the database  
 assign_player(Index, Player) :- assert(player(Index, Player)). 
-
-
-		
-
-
-
-
-
-		
-
 
 % %%%%% INITIAL CARD KNOWLEDGE
 
@@ -159,7 +142,7 @@ exec_command(CurrIndex, NumPlayers, X) :-
 			player(CurrIndex, Player),
 			( X = 'next' -> write('End turn.');
 			  X = 'help' -> print_commands, menu(CurrIndex, NumPlayers);
-              X = 'record' -> record_card, menu(CurrIndex, NumPlayers);
+              X = 'record' -> record_player_card(CurrIndex), menu(CurrIndex, NumPlayers);
 			  X = 'suggest' -> make_suggestion(CurrIndex, NumPlayers), menu(CurrIndex, NumPlayers);
 			  X = 'history' -> history, menu(CurrIndex, NumPlayers);
 			  X = 'accuse' -> accusation(NumPlayers), menu(CurrIndex, NumPlayers);
@@ -187,28 +170,11 @@ current_player(Player) :-
 
 % %%%%%% RECORD CARD INFO
 
-
 % Record the card given the player.
 record_player_card(Player) :-
 	writeln('Which type of card was it?'),
 	print_cards,
 	read(T), nl, nl, get_card(Player, T).
-
-% add the specified card information to the database
-record_card :-  nl,
-	write('Which opponent showed you a card?'), nl, nl,
-	print_characters,
-	read(P), nl, nl,
-	write('Which type of card was it?'), nl, nl,
-	print_cards,
-	(P == 's' -> X = 'Miss Scarlett';
-	P == 'w' -> X  = 'Mrs. White';
-	P == 'g' -> X  = 'Mr. Green';
-	P == 'p' -> X  = 'Mrs. Peacock';
-	P == 'pl'-> X  = 'Professor Plum';   
-	P == 'm' -> X  = 'Colonel Mustard'; invalid_command),
-
-	read(T), nl, nl, get_card(X, T).
 
 % retrieve the correct card to add to the database.
 get_card(P, T) :-
@@ -223,6 +189,7 @@ get_card(P, T) :-
 		print_rooms,
 		read(R), save_card_info_room(PlayerKey,R); 
 		invalid_command).
+
 
 % add the specified suspect card information to the database
 save_card_info_suspect(P, S) :- 
@@ -257,8 +224,30 @@ save_card_info_room(P, R) :-
 		R == 'd' -> retract(room('dining room', _, _)), assert(room('dining room', P, []));
 		invalid_command).
 
+get_character(Character) :-
+		writeln('Which suspect was suggested?'),
+		print_characters,
+		read(X),
+		character_name(X,_) ->
+			character_name(X, Character);
+			invalid_command, get_character(Character).
 
-
+get_room(Room) :-
+		writeln('Which room was suggested?'),
+		print_rooms,
+		read(X),
+		room_name(X,_) ->
+			room_name(X, Room);
+			invalid_command, get_room(Room).
+			
+get_weapon(Weapon) :-
+		writeln('Which weapon was suggested?'),
+		print_weapons,
+		read(X),
+		weapon_name(X,_) ->
+			weapon_name(X, Weapon);
+			invalid_command, get_weapon(Weapon).
+			
 % %%%%%% MAKE A SUGGESTION
 
 % Begins the suggestion process
@@ -266,52 +255,24 @@ make_suggestion(CurrIndex, NumPlayers) :- enter_suggestion(CurrIndex, NumPlayers
 
 % Enter a suggestion here
 enter_suggestion(CurrIndex, NumPlayers) :-
-		
-		player(CurrIndex, P),
-
-		write('Which Suspect was suggested?'), nl, nl,
-		print_characters,
-		read(S), nl, nl, 
-
-		(S == 's' -> Z = 'Miss Scarlett';
-		 S == 'w' -> Z = 'Mrs. White';
-		 S == 'g' -> Z  = 'Mr. Green';
-		 S == 'p' -> Z  = 'Mrs. Peacock';
-		 S == 'pl'-> Z  = 'Professor Plum';   
-		 S == 'm' -> Z  = 'Colonel Mustard';invalid_command),
-
-		write('Which room was suggested?'), nl, nl,
-		print_rooms,
-		read(R), nl, nl, 
-
-		(R == 'k' -> Y = 'kitchen';
-		R == 'b' -> Y = 'ballroom'; 
-		R == 'c' -> Y = 'conservatory';
-		R == 'bi' -> Y = 'billiard room';
-		R == 'l' -> Y = 'library';
-		R == 's' -> Y = 'study';
-		R == 'h' -> Y = 'hall';
-		R == 'lo' -> Y = 'lounge';
-		R == 'd' -> Y = 'dining room'; invalid_command),
-
-		write('Which weapon was suggested?'), nl, nl,
-		print_weapons,
-		read(W), nl, nl,
-
-		(W == 'k' -> I = 'knife'; 
-		 W == 'c' -> I = 'candlestick';
-		 W == 'r' -> I = 'revolver';
-		 W == 'ro' -> I = 'rope'; 
-		 W == 'l' -> I = 'lead pipe';
-		 W == 'w' -> I = 'wrench'; invalid_command),
+		player(CurrIndex, Player),
+		get_room(Room),
+		get_character(Character),
+		get_weapon(Weapon),
 /*
 		Z = 'Miss Scarlett',
 		Y = 'kitchen',
 		I = 'knife',
 */
 		% add the suggestion to the database
-		assert(suggestion(P,Y,Z,I)),
-		update_cards(CurrIndex,NumPlayers,1,P,Y,Z,I).
+		assert(suggestion(Player, Room, Character, Weapon)),
+		update_cards(CurrIndex,
+					 NumPlayers,
+					 1,
+					 Player,
+					 Room,
+					 Character,
+					 Weapon).
 		
 % %%%%% UPDATE CARDS WHEN NO CARDS SHOWN BY PLAYER
 
@@ -366,87 +327,6 @@ remove_duplicates([],[]).
 remove_duplicates([X],[X]).
 remove_duplicates([X,X|Xs],Ys) :- remove_duplicates([X|Xs],Ys).
 remove_duplicates([X,Y|Ys],[X|Zs]) :- X \= Y, remove_duplicates([Y|Ys],Zs).
-
-% %%% CHECKING FOR AN ACCUSATION 
-
-% alerts if accusation can be made or not
-accusation(NumPlayers) :- 
-        (check_accusation(NumPlayers) -> nl, write('Accusation can be made!'), print_accusation(NumPlayers), nl; 
-        nl, write('No accusation available'), nl).
-
-% checks to see that there is only one suspect, room and weapon card (indicated by -1s)
-check_accusation(NumPlayers) :-    
-        findall(card(X,Y,Z),card(_,-1,_),L), 
-        (length(L,3) -> only_neg_weapon(NumPlayers), only_neg_room(NumPlayers), only_neg_suspect(NumPlayers);
-        not_held_weapon(NumPlayers), not_held_room(NumPlayers), not_held_suspect(NumPlayers)).
-
-% ensures only one weapon holds the -1 flag, repesenting nobody has the card    
-only_neg_weapon(NumPlayers):- 
-        findall(weapon(X,Y,Z), weapon(_,-1,_),L), length(L,1).
-
-% ensures that length of DontHold is equal to the number of opponents in the game, repesenting nobody has the card
-not_held_weapon(NumPlayers):- 
-        findall(weapon(Name,Num,List), weapon(_,_,_), R), nl, check_length_w(R, NumPlayers).
-
-% returns true if numplayers is correct length
-check_length_w([], NumPlayers) :- 
-        false.
-check_length_w([weapon(Name, Num, List)|T], NumPlayers) :- 
-        (grab_length_w(weapon(Name,Num,List), NumPlayers) -> nl, write('Goal Weapon Known: '), write(Name);
-		check_length_w(T, NumPlayers)).
-grab_length_w(weapon(Name,Num,List), NumPlayers) :- 
-        weapon(Name,Num,List), X is NumPlayers - 1, length(List, X).
-
-
-% ensures only one room holds the -1 flag, repesenting nobody has the card    
-only_neg_room(NumPlayers) :- 
-        findall(room(X,Y,Z),room(_,-1,_),L), length(L,1).
-
-% ensures that length of DontHold is equal to the number of opponents in the game, repesenting nobody has the card
-not_held_room(NumPlayers) :- 
-        findall(room(Name,Num,List), room(_,_,_), R), check_length_r(R, NumPlayers).
-
-% returns true if numplayers is correct length
-check_length_r([], NumPlayers) :- 
-        false.
-check_length_r([room(Name, Num, List)|T], NumPlayers) :- 
-        (grab_length_r(room(Name, Num, List), NumPlayers) -> nl, write('Goal Room Known: '), write(Name); check_length_r(T, NumPlayers)).
-grab_length_r(room(Name,Num,List), NumPlayers) :- 
-        room(Name,Num,List), X is NumPlayers - 1, length(List, X).
-
-
-% ensures only one suspect holds the -1 flag, repesenting nobody has the card    
-only_neg_suspect(NumPlayers):- 
-        findall(person(X,Y,Z),person(_,-1,_),L), length(L,1).
-
-% ensures that length of DontHold is equal to the number of opponents in the game, repesenting nobody has the card
-not_held_suspect(NumPlayers):- 
-        findall(person(Name,Num,List), person(_,_,_), R), check_length_s(R, NumPlayers).
-
-% returns true if numplayers is correct length
-check_length_s([], NumPlayers) :- 
-        false.
-
-check_length_s([person(Name, Num, List)|T], NumPlayers) :- 
-        (grab_length_s(person(Name,Num,List), NumPlayers) -> nl, write('Goal Suspect Known: '), write(Name);check_length_s(T, NumPlayers)).
-
-grab_length_s(person(Name,Num,List), NumPlayers) :- 
-        person(Name,Num,List), X is NumPlayers - 1, length(List, X).
-
-
-% %%%%%% PRINT ACCUSATION
-
-% prints accusaton in case where all accused cards are -1
-print_accusation(NumPlayers):-
-		findall(card(X,-1,Z),card(_,-1,_),List),
-		(length(List,3) -> acc_list_neg; 
-		write('')).
-
-acc_list_neg:- write(' '), nl, write('Accuse the Folowing Cards'), nl,
-		findall(card(X,-1,Z),card(X,-1,Z),AccList), 
-		maplist(writeln, AccList), nl.
-
-
 
 % %%%%% CURRENT GAME HISTORY
 

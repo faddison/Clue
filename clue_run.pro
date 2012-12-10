@@ -39,4 +39,9 @@ cluetest2 :-
 		begin_game(3).
 
 % main program entry point		
-clue :- reset_all,setup ,add_cards, write('Clue Assistant: Version 1'), nl, create_players.
+clue :- 
+		reset_all,
+		setup ,
+		add_cards, 
+		writeln('Clue Assistant: Version 1'),
+		create_players.
