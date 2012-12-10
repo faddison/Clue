@@ -138,7 +138,8 @@ quit_game :-
 		writeln('Are you sure you want to exit the game?'),
 		writeln('Type "yes" to exit or "no" to cancel'),
 		read(X), 
-		(X = 'yes' -> throw(gameover)). 
+		(X = 'yes' -> 
+			throw(gameover)). 
 
 % Execute the specified menu command.
 exec_command(CurrIndex, NumPlayers, X) :- 
