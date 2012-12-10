@@ -2,6 +2,7 @@
 :- compile(clue_print).
 :- compile(clue_accuse).
 :- compile(clue_suggest).
+:- compile(clue_record).
 :- compile(clue_core).
 
 % %%%%% START GAME

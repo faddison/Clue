@@ -85,22 +85,26 @@ quit_game :-
 			throw(gameover)). 
 
 % Execute the specified menu command.
-exec_command(CurrIndex, NumPlayers, X) :- 
+exec_command(CurrIndex, NumPlayers, Command) :- 
 		player(CurrIndex, Player),
-		(X = 'next' -> write('End turn.');
-		X = 'help' -> print_commands, menu(CurrIndex, NumPlayers);
-		X = 'record' -> record_card(CurrIndex), menu(CurrIndex, NumPlayers);
-		X = 'suggest' -> make_suggestion(CurrIndex, NumPlayers), menu(CurrIndex, NumPlayers);
-		X = 'history' -> history, menu(CurrIndex, NumPlayers);
-		X = 'suggestions' -> history_suggestions, menu(CurrIndex, NumPlayers);
-		X = 'cards' -> history_cards, menu(CurrIndex, NumPlayers);
-		X = 'players' -> history_players, menu(CurrIndex, NumPlayers);
-		X = 'accuse' -> accusation(NumPlayers), menu(CurrIndex, NumPlayers);
-		X = 'reset' -> reset_all, add_cards, begin_game(NumPlayers);
-		X = 'current' -> current_player(Player), menu(CurrIndex, NumPlayers);
-		X = 'hint' -> get_hint(Player), menu(CurrIndex, NumPlayers);
-		X = 'quit' -> quit_game, menu(CurrIndex, NumPlayers);
-		invalid_command). 
+		(Command == 'next' -> 
+			writeln('End turn.');
+			exec_command_helper(CurrIndex, NumPlayers, Player, Command),
+				menu(CurrIndex, NumPlayers)).
+				
+exec_command_helper(CurrIndex, NumPlayers, Player, 'help') :- print_commands.
+exec_command_helper(CurrIndex, NumPlayers, Player, 'record') :- record_card(CurrIndex).
+exec_command_helper(CurrIndex, NumPlayers, Player, 'suggest') :- make_suggestion(CurrIndex, NumPlayers).
+exec_command_helper(CurrIndex, NumPlayers, Player, 'history') :- history.
+exec_command_helper(CurrIndex, NumPlayers, Player, 'suggestions') :- history_suggestions.
+exec_command_helper(CurrIndex, NumPlayers, Player, 'cards') :- history_cards.
+exec_command_helper(CurrIndex, NumPlayers, Player, 'players') :- history_players.
+exec_command_helper(CurrIndex, NumPlayers, Player, 'accuse') :- accusation(NumPlayers).
+exec_command_helper(CurrIndex, NumPlayers, Player, 'current') :- current_player(Player).
+exec_command_helper(CurrIndex, NumPlayers, Player, 'hint') :- get_hint(Player).
+exec_command_helper(CurrIndex, NumPlayers, Player, 'quit') :- quit_game.
+exec_command_helper(CurrIndex, NumPlayers, Player, 'reset') :- reset_all, add_cards, begin_game(NumPlayers).
+exec_command_helper(CurrIndex, NumPlayers, Player, Invalid) :- invalid_command.
 			  
 % Determine whether a hint can be give or not.
 get_hint(Player) :-
@@ -118,12 +122,10 @@ print_hint :-
 % Returns the current user and whether its computer or player turn.	
 current_player(Player) :-
 		write('Current player is '), write(Player),
-		self(Player) -> 
+		(self(Player) -> 
 			write(' (Your turn!)'); 
-			write(' (Opponents turn!)').
-
-
-			
+			write(' (Opponents turn!)')),
+		nl.
 
 
 
